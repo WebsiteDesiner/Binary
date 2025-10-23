@@ -1,0 +1,2293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Finance Agent - Professional Trading Platform</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            background: #0B0E11;
+            color: #EAECEF;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 顶部栏 */
+        .header {
+            height: 50px;
+            background: linear-gradient(180deg, #1C1F24 0%, #161A1E 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+        }
+
+        /* 视频按钮样式 */
+        .video-btn {
+            background: linear-gradient(135deg, #FCD535 0%, #F0B90B 100%);
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .video-btn:hover {
+            background: linear-gradient(135deg, #F0B90B 0%, #FCD535 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(252, 213, 53, 0.3);
+        }
+
+        /* 视频模态框样式 */
+        .video-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .video-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1C1F24;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 90%;
+            max-height: 90%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .video-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .video-modal-title {
+            color: #FCD535;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .video-close {
+            background: none;
+            border: none;
+            color: #848E9C;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .video-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: transparent;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .price-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 10px;
+            background: rgba(14, 203, 129, 0.1);
+            border: 1px solid rgba(14, 203, 129, 0.2);
+            border-radius: 4px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: #0ECB81;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .status-text {
+            font-size: 11px;
+            color: #0ECB81;
+            font-weight: 500;
+        }
+
+        .market-ticker {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .ticker-item {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .ticker-label {
+            font-size: 10px;
+            color: #848E9C;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ticker-value {
+            font-size: 18px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .green { color: #0ECB81; }
+        .red { color: #F6465D; }
+
+        /* Banner区域 */
+        .banner-container {
+            width: 100%;
+            height: 120px;
+            background: #000;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 2px solid rgba(252, 213, 53, 0.3);
+        }
+
+        .banner-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: auto;
+            image-rendering: high-quality;
+            -ms-interpolation-mode: bicubic;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        /* Banner装饰logo样式 - 波浪形布局 */
+        .banner-decorations {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 60px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .banner-logo-left, .banner-logo-right {
+            display: flex;
+            flex-direction: row;
+            gap: 12px;
+            align-items: center;
+            position: relative;
+        }
+
+        .banner-logo-item {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border: 3px solid rgba(252, 213, 53, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s ease;
+            animation: waveFloat 5s ease-in-out infinite;
+            position: relative;
+        }
+
+        /* 波浪形排列 - 左侧 */
+        .banner-logo-left .banner-logo-item:nth-child(1) { 
+            animation-delay: 0s; 
+            transform: translateY(0px);
+        }
+        .banner-logo-left .banner-logo-item:nth-child(2) { 
+            animation-delay: 0.4s; 
+            transform: translateY(-8px);
+        }
+        .banner-logo-left .banner-logo-item:nth-child(3) { 
+            animation-delay: 0.8s; 
+            transform: translateY(-4px);
+        }
+        .banner-logo-left .banner-logo-item:nth-child(4) { 
+            animation-delay: 1.2s; 
+            transform: translateY(-12px);
+        }
+
+        /* 波浪形排列 - 右侧 */
+        .banner-logo-right .banner-logo-item:nth-child(1) { 
+            animation-delay: 0.2s; 
+            transform: translateY(-6px);
+        }
+        .banner-logo-right .banner-logo-item:nth-child(2) { 
+            animation-delay: 0.6s; 
+            transform: translateY(-10px);
+        }
+        .banner-logo-right .banner-logo-item:nth-child(3) { 
+            animation-delay: 1.0s; 
+            transform: translateY(-2px);
+        }
+        .banner-logo-right .banner-logo-item:nth-child(4) { 
+            animation-delay: 1.4s; 
+            transform: translateY(-8px);
+        }
+
+        .banner-logo-item:hover {
+            transform: scale(1.25) translateY(-8px);
+            background: rgba(252, 213, 53, 0.35);
+            border-color: rgba(252, 213, 53, 0.9);
+            box-shadow: 0 8px 25px rgba(252, 213, 53, 0.5);
+        }
+
+        .banner-logo-item img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        @keyframes waveFloat {
+            0%, 100% { 
+                transform: translateY(0px) rotate(0deg); 
+            }
+            25% { 
+                transform: translateY(-8px) rotate(2deg); 
+            }
+            50% { 
+                transform: translateY(-12px) rotate(0deg); 
+            }
+            75% { 
+                transform: translateY(-6px) rotate(-2deg); 
+            }
+        }
+
+        /* 主布局 - 调整高度计算 */
+        .main-container {
+            display: flex;
+            flex: 1;
+            background: #0B0E11;
+            height: calc(100vh - 50px - 120px);
+            overflow: hidden;
+        }
+
+        /* 左侧面板 */
+        .sidebar-left {
+            width: 360px;
+            background: #12161C;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .section-header {
+            height: 44px;
+            background: rgba(30, 35, 41, 0.6);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 排行榜 */
+        .leaderboard-section {
+            height: 320px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .leaderboard {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            min-height: 0;
+        }
+
+        .trader-card {
+            background: rgba(30, 35, 41, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .trader-card:hover {
+            background: rgba(30, 35, 41, 0.6);
+            transform: translateX(2px);
+        }
+
+        .trader-card.user {
+            background: rgba(30, 136, 229, 0.1);
+            border-color: rgba(30, 136, 229, 0.3);
+        }
+
+        .rank-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
+        .rank-2 { background: linear-gradient(135deg, #E5E4E2, #C0C0C0); color: #000; }
+        .rank-3 { background: linear-gradient(135deg, #CD7F32, #B87333); color: #FFF; }
+
+        /* 交易面板 */
+        .trade-panel {
+            flex: 1;
+            background: #161A1E;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        /* 仓位显示 */
+        .position-display {
+            background: rgba(30, 35, 41, 0.5);
+            border-radius: 8px;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .position-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .position-label {
+            font-size: 10px;
+            color: #848E9C;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .position-value {
+            font-size: 13px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* 市价显示 */
+        .market-price-bar {
+            background: rgba(30, 35, 41, 0.5);
+            border-radius: 8px;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .price-label {
+            font-size: 11px;
+            color: #848E9C;
+            text-transform: uppercase;
+        }
+
+        .price-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #FCD535;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* 数量选择 */
+        .size-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .size-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .size-label {
+            font-size: 11px;
+            color: #848E9C;
+            text-transform: uppercase;
+        }
+
+        .size-display {
+            font-size: 13px;
+            font-weight: 600;
+            color: #FCD535;
+        }
+
+        .size-buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+        }
+
+        .size-btn {
+            padding: 7px 4px;
+            background: rgba(30, 35, 41, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            color: #848E9C;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .size-btn:hover {
+            background: rgba(252, 213, 53, 0.1);
+            border-color: #FCD535;
+            color: #FCD535;
+        }
+
+        .size-btn.active {
+            background: rgba(252, 213, 53, 0.2);
+            border-color: #FCD535;
+            color: #FCD535;
+        }
+
+        /* 账户统计 */
+        .account-stats {
+            background: rgba(30, 35, 41, 0.5);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #848E9C;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .stat-value {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* 交易按钮组 */
+        .trade-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .trade-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-long {
+            background: #0ECB81;
+            color: #000;
+        }
+
+        .btn-long:hover {
+            background: #0BB571;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(14, 203, 129, 0.3);
+        }
+
+        .btn-short {
+            background: #F6465D;
+            color: #FFF;
+        }
+
+        .btn-short:hover {
+            background: #E5354C;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(246, 70, 93, 0.3);
+        }
+
+        .btn-close {
+            background: #474D57;
+            color: #FFF;
+        }
+
+        .btn-close:hover:not(:disabled) {
+            background: #5E6673;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(132, 142, 156, 0.3);
+        }
+
+        .btn-close:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* 交易提示 */
+        .trading-tips {
+            background: rgba(252, 213, 53, 0.05);
+            border: 1px solid rgba(252, 213, 53, 0.1);
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: auto;
+        }
+
+        .tip-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #FCD535;
+            margin-bottom: 6px;
+        }
+
+        .tip-content {
+            font-size: 10px;
+            color: #848E9C;
+            line-height: 1.5;
+        }
+
+        .tip-content p {
+            margin: 3px 0;
+        }
+
+        /* 中间图表区域 */
+        .center-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-width: 0;
+        }
+
+        .chart-container {
+            flex: 1;
+            background: #000;
+            position: relative;
+            min-height: 500px;
+            height: 100%;
+        }
+
+        /* 右侧技术分析 */
+        .sidebar-right {
+            width: 360px;
+            background: #12161C;
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .indicators-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            max-height: calc(100vh - 470px);
+        }
+
+        .indicator-card {
+            background: rgba(30, 35, 41, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+
+        .indicator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .indicator-name {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .indicator-value {
+            font-size: 14px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .indicator-meter {
+            position: relative;
+            height: 30px;
+            background: linear-gradient(90deg, 
+                #F6465D 0%, 
+                #F6465D 20%, 
+                #FCD535 40%, 
+                #848E9C 50%, 
+                #FCD535 60%, 
+                #0ECB81 80%, 
+                #0ECB81 100%);
+            border-radius: 4px;
+            margin: 8px 0;
+        }
+
+        .meter-pointer {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 3px;
+            height: 22px;
+            background: #FFF;
+            border-radius: 2px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+            transition: left 0.3s;
+        }
+
+        .indicator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .indicator-stat {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .indicator-stat-label {
+            font-size: 9px;
+            color: #5E6673;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .indicator-stat-value {
+            font-size: 11px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .signal-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .signal-strong-buy {
+            background: #0ECB81;
+            color: #000;
+        }
+
+        .signal-buy {
+            background: rgba(14, 203, 129, 0.2);
+            color: #0ECB81;
+        }
+
+        .signal-neutral {
+            background: rgba(132, 142, 156, 0.2);
+            color: #848E9C;
+        }
+
+        .signal-sell {
+            background: rgba(246, 70, 93, 0.2);
+            color: #F6465D;
+        }
+
+        .signal-strong-sell {
+            background: #F6465D;
+            color: #FFF;
+        }
+
+        /* 综合信号 */
+        .overall-signal {
+            background: rgba(30, 35, 41, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px;
+            text-align: center;
+        }
+
+        .overall-title {
+            font-size: 10px;
+            color: #848E9C;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .overall-value {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        /* 交易记录 */
+        .market-depth {
+            margin: 10px;
+            padding: 10px;
+            background: rgba(30, 35, 41, 0.6);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 180px;
+            flex-shrink: 0;
+        }
+
+        .depth-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+
+        /* 通知 */
+        .toast {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: linear-gradient(135deg, rgba(30, 35, 41, 0.95), rgba(22, 26, 30, 0.95));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 3px solid #0ECB81;
+            border-radius: 6px;
+            padding: 14px 18px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            animation: slideIn 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.error {
+            border-left-color: #F6465D;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(120%); }
+            to { transform: translateX(0); }
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部栏 -->
+    <div class="header">
+        <div class="logo-section">
+            <div class="logo">
+                <div class="logo-icon">
+                    <img src="logo.png" alt="Binary Finance" style="width: 100%; height: 100%; object-fit: contain;">
+                </div>
+                <span class="logo-text">Binary Finance Agent</span>
+                </div>
+            <div class="price-status">
+                <div class="status-dot"></div>
+                <span class="status-text" id="price-source">Binance Live</span>
+            </div>
+        </div>
+        <div class="market-ticker">
+            <div class="ticker-item">
+                <span class="ticker-label">BTC/USDT</span>
+                <span class="ticker-value" id="btc-price">Loading...</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-label">24H Change</span>
+                <span class="ticker-value" id="btc-change">--</span>
+        </div>
+            <div class="ticker-item">
+                <span class="ticker-label">24H Volume</span>
+                <span class="ticker-value" id="volume" style="font-size: 14px;">--</span>
+    </div>
+            <div class="ticker-item">
+                <span class="ticker-label">Funding Rate</span>
+                <span class="ticker-value" style="font-size: 14px;">0.010%</span>
+                        </div>
+                        </div>
+        
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <a href="https://x.com/BinaryAiAgent" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 6px; color: #848E9C; text-decoration: none; transition: color 0.3s ease;" onmouseover="this.style.color='#1DA1F2'" onmouseout="this.style.color='#848E9C'">
+                <img src="X.png" alt="X (Twitter)" style="width: 20px; height: 20px;">
+                <span style="font-size: 12px; font-weight: 500;">关注我们</span>
+            </a>
+            <button class="video-btn" onclick="openVideoModal()">
+                <i class="fas fa-play"></i>
+                介绍视频
+            </button>
+                </div>
+            </div>
+
+    <!-- Banner区域 -->
+    <div class="banner-container">
+        <img src="banner.png" alt="Binary Finance Banner" class="banner-image">
+        
+        <!-- 装饰logo - 8个不重复的logo -->
+        <div class="banner-decorations">
+            <div class="banner-logo-left">
+                <div class="banner-logo-item">
+                    <img src="logo2.jpg" alt="Logo 2">
+                        </div>
+                <div class="banner-logo-item">
+                    <img src="logo13.jpg" alt="Logo 13">
+                        </div>
+                <div class="banner-logo-item">
+                    <img src="logo5.jpg" alt="Logo 5">
+                    </div>
+                <div class="banner-logo-item">
+                    <img src="logo7.jpg" alt="Logo 7">
+                    </div>
+                        </div>
+            
+            <div class="banner-logo-right">
+                <div class="banner-logo-item">
+                    <img src="logo8.jpg" alt="Logo 8">
+                    </div>
+                <div class="banner-logo-item">
+                    <img src="logo9.jpg" alt="Logo 9">
+                        </div>
+                <div class="banner-logo-item">
+                    <img src="logo10.jpg" alt="Logo 10">
+                        </div>
+                <div class="banner-logo-item">
+                    <img src="LOGO12.png" alt="Logo 12">
+                        </div>
+            </div>
+                        </div>
+                    </div>
+                    
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 左侧面板 -->
+        <div class="sidebar-left">
+            <!-- 排行榜 -->
+            <div class="leaderboard-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fas fa-trophy" style="color: #FCD535;"></i>
+                        AI Trading Arena
+                                </div>
+                    <span style="font-size: 10px; color: #5E6673;">
+                        <span id="runtime">00:00:00</span>
+                    </span>
+                            </div>
+                <div class="leaderboard" id="leaderboard"></div>
+                    </div>
+                    
+            <!-- 交易面板 -->
+            <div class="trade-panel">
+                <!-- 仓位显示 -->
+                <div class="position-display">
+                    <div class="position-item">
+                        <span class="position-label">Direction</span>
+                        <span class="position-value" id="pos-direction">--</span>
+                    </div>
+                    <div class="position-item">
+                        <span class="position-label">Size</span>
+                        <span class="position-value" id="pos-size">--</span>
+                </div>
+                    <div class="position-item">
+                        <span class="position-label">PnL</span>
+                        <span class="position-value" id="pos-pnl">--</span>
+            </div>
+                    <div class="position-item">
+                        <span class="position-label">Entry Price</span>
+                        <span class="position-value" id="pos-entry">--</span>
+        </div>
+                    <div class="position-item">
+                        <span class="position-label">Mark Price</span>
+                        <span class="position-value" id="pos-mark">--</span>
+            </div>
+                    <div class="position-item">
+                        <span class="position-label">Balance</span>
+                        <span class="position-value" id="pos-balance">$100,000</span>
+                </div>
+                    </div>
+                    
+                <!-- 市价显示 -->
+                <div class="market-price-bar">
+                    <span class="price-label">Binance Market Price</span>
+                    <span class="price-value" id="market-price">Loading...</span>
+                    </div>
+                    
+                <!-- 数量选择 -->
+                <div class="size-selector">
+                    <div class="size-header">
+                        <span class="size-label">Position Size (5x Leverage)</span>
+                        <span class="size-display" id="size-display">0.000 BTC</span>
+                    </div>
+                    <div class="size-buttons">
+                        <button class="size-btn" onclick="selectSize(10)">10%</button>
+                        <button class="size-btn" onclick="selectSize(25)">25%</button>
+                        <button class="size-btn" onclick="selectSize(50)">50%</button>
+                        <button class="size-btn" onclick="selectSize(75)">75%</button>
+                        <button class="size-btn" onclick="selectSize(100)">MAX</button>
+            </div>
+        </div>
+
+                <!-- 账户统计 -->
+                <div class="account-stats">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Today's PnL</span>
+                            <span class="stat-value" id="today-pnl">$0.00</span>
+                    </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Win Rate</span>
+                            <span class="stat-value" id="win-rate">0%</span>
+                    </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Total Trades</span>
+                            <span class="stat-value" id="total-trades">0</span>
+                </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Max Leverage</span>
+                            <span class="stat-value" style="color: #FCD535;">5X</span>
+                </div>
+                    </div>
+                </div>
+                
+                <!-- 交易按钮 -->
+                <div class="trade-buttons">
+                    <button class="trade-btn btn-long" onclick="openPosition('long')">
+                        <i class="fas fa-arrow-up"></i>
+                        LONG
+                    </button>
+                    <button class="trade-btn btn-short" onclick="openPosition('short')">
+                        <i class="fas fa-arrow-down"></i>
+                        SHORT
+                    </button>
+                    <button class="trade-btn btn-close" id="close-btn" onclick="closePosition()" disabled>
+                        <i class="fas fa-xmark"></i>
+                        CLOSE
+                    </button>
+                    </div>
+
+                <!-- 交易提示 -->
+                <div class="trading-tips">
+                    <div class="tip-header">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Trading Info</span>
+                        <button onclick="resetAllData()" style="margin-left: auto; background: rgba(246, 70, 93, 0.2); color: #F6465D; border: 1px solid rgba(246, 70, 93, 0.3); border-radius: 4px; padding: 2px 8px; font-size: 9px; cursor: pointer;">
+                            <i class="fas fa-redo"></i> Reset
+                        </button>
+                    </div>
+                    <div class="tip-content">
+                        <p>• All trades use Binance real-time price</p>
+                        <p>• Data auto-saves every 5 seconds</p>
+                        <p>• Your trades persist after refresh</p>
+                    </div>
+                    </div>
+                </div>
+                </div>
+
+        <!-- 中间图表区域 -->
+        <div class="center-area">
+            <div class="chart-container" id="tv-chart"></div>
+            </div>
+
+        <!-- 右侧技术分析 -->
+        <div class="sidebar-right">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    Technical Analysis
+                    </div>
+                    </div>
+            
+            <!-- 综合信号 -->
+            <div class="overall-signal">
+                <div class="overall-title">Overall Signal</div>
+                <div class="overall-value green" id="overall-score">65</div>
+                <div class="signal-badge signal-buy" style="padding: 6px 16px; font-size: 12px;">BUY</div>
+                </div>
+            
+            <div class="indicators-list">
+                <!-- 关键指标组 - 紧凑显示 -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+                    <!-- RSI 快速卡片 -->
+                    <div class="indicator-card" style="padding: 8px;">
+                        <div class="indicator-header">
+                            <span class="indicator-name">RSI</span>
+                            <span class="indicator-value" id="rsi-value">55.23</span>
+                </div>
+                        <div class="indicator-meter" style="height: 20px;">
+                            <div class="meter-pointer" id="rsi-pointer" style="left: 55%; height: 16px;"></div>
+                    </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 6px;">
+                            <span class="signal-badge signal-neutral" id="rsi-signal" style="font-size: 9px; padding: 2px 6px;">Neutral</span>
+                            <span style="font-size: 9px; color: #848E9C;" id="rsi-zone">Normal</span>
+                </div>
+                    </div>
+
+                    <!-- Stochastic 快速卡片 -->
+                    <div class="indicator-card" style="padding: 8px;">
+                        <div class="indicator-header">
+                            <span class="indicator-name">STOCH</span>
+                            <span class="indicator-value" id="stoch-value">72.45</span>
+                    </div>
+                        <div class="indicator-meter" style="height: 20px;">
+                            <div class="meter-pointer" id="stoch-pointer" style="left: 72%; height: 16px;"></div>
+                    </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 6px;">
+                            <span style="font-size: 9px; color: #0ECB81;" id="stoch-cross">Bullish</span>
+                            <span style="font-size: 9px; color: #848E9C;" id="stoch-zone">Overbought</span>
+                    </div>
+                </div>
+            </div>
+
+                <!-- MACD -->
+                <div class="indicator-card">
+                    <div class="indicator-header">
+                        <span class="indicator-name">MACD (12,26,9)</span>
+                        <span class="signal-badge signal-buy" id="macd-signal" style="font-size: 9px; padding: 2px 6px;">BUY</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                        <div>
+                            <span class="indicator-stat-label">MACD</span>
+                            <span class="indicator-stat-value green" id="macd-line" style="font-size: 10px;">142.35</span>
+                    </div>
+                        <div>
+                            <span class="indicator-stat-label">Signal</span>
+                            <span class="indicator-stat-value" id="macd-signal-line" style="font-size: 10px;">138.21</span>
+                </div>
+                        <div>
+                            <span class="indicator-stat-label">Hist</span>
+                            <span class="indicator-stat-value green" id="macd-histogram" style="font-size: 10px;">+4.14</span>
+                </div>
+                    </div>
+                </div>
+
+                <!-- Moving Averages -->
+                <div class="indicator-card">
+                    <div class="indicator-header">
+                        <span class="indicator-name">Moving Averages</span>
+                        <span class="signal-badge signal-strong-buy" id="ma-signal" style="font-size: 9px; padding: 2px 6px;">STRONG BUY</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                        <div>
+                            <span class="indicator-stat-label">EMA 9/21</span>
+                            <span class="indicator-stat-value" style="font-size: 10px;">
+                                <span id="ema9">103,845</span>/<span id="ema21">103,821</span>
+                        </span>
+                    </div>
+                        <div>
+                            <span class="indicator-stat-label">SMA 50/200</span>
+                            <span class="indicator-stat-value" style="font-size: 10px;">
+                                <span id="sma50">103,756</span>/<span id="sma200">102,234</span>
+                        </span>
+                    </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 6px;">
+                        <span class="indicator-stat-value green" id="ma-cross" style="font-size: 10px;">Golden Cross</span>
+                </div>
+            </div>
+
+                <!-- Bollinger Bands -->
+                <div class="indicator-card">
+                    <div class="indicator-header">
+                        <span class="indicator-name">Bollinger Bands</span>
+                        <span class="signal-badge signal-neutral" id="bb-signal" style="font-size: 9px; padding: 2px 6px;">NEUTRAL</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                        <div>
+                            <span class="indicator-stat-label">Upper</span>
+                            <span class="indicator-stat-value" id="bb-upper" style="font-size: 10px;">104,234</span>
+                    </div>
+                        <div>
+                            <span class="indicator-stat-label">Middle</span>
+                            <span class="indicator-stat-value" id="bb-middle" style="font-size: 10px;">103,872</span>
+                </div>
+                        <div>
+                            <span class="indicator-stat-label">Lower</span>
+                            <span class="indicator-stat-value" id="bb-lower" style="font-size: 10px;">103,509</span>
+                </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 6px;">
+                        <span style="font-size: 9px; color: #848E9C;">Position: </span>
+                        <span class="indicator-stat-value" id="bb-percent" style="font-size: 10px;">52.3%</span>
+                </div>
+                    </div>
+
+                <!-- Volume & ATR 组合卡片 -->
+                <div class="indicator-card">
+                    <div class="indicator-header">
+                        <span class="indicator-name">Vol & ATR</span>
+                        <span style="font-size: 10px; color: #0ECB81;" id="volume-trend">↑ Increasing</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                        <div>
+                            <span class="indicator-stat-label">Volume</span>
+                            <span class="indicator-stat-value" id="current-volume" style="font-size: 10px;">2.45B</span>
+                    </div>
+                        <div>
+                            <span class="indicator-stat-label">ATR(14)</span>
+                            <span class="indicator-stat-value" id="atr-value" style="font-size: 10px;">1,234.56</span>
+                    </div>
+                        <div>
+                            <span class="indicator-stat-label">Buy/Sell</span>
+                            <span class="indicator-stat-value green" id="buy-sell-ratio" style="font-size: 10px;">62/38</span>
+                </div>
+                        <div>
+                            <span class="indicator-stat-label">Volatility</span>
+                            <span class="indicator-stat-value" id="atr-volatility" style="font-size: 10px;">Medium</span>
+                </div>
+            </div>
+        </div>
+
+                <!-- Ichimoku 简化版 -->
+                <div class="indicator-card">
+                    <div class="indicator-header">
+                        <span class="indicator-name">Ichimoku</span>
+                        <span class="signal-badge signal-buy" id="ichimoku-signal" style="font-size: 9px; padding: 2px 6px;">BUY</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 10px; color: #848E9C;">Price Position:</span>
+                        <span class="indicator-stat-value green" id="ichimoku-trend" style="font-size: 11px;">Above Cloud</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                        <span style="font-size: 10px; color: #848E9C;">Cloud:</span>
+                        <span class="indicator-stat-value green" id="cloud-color" style="font-size: 11px;">Bullish</span>
+                </div>
+            </div>
+
+                <!-- Pivot Points 精简版 -->
+                <div class="indicator-card">
+                    <div class="indicator-header">
+                        <span class="indicator-name">Pivot Points</span>
+                        <span class="indicator-stat-value green" id="pivot-position" style="font-size: 11px;">Above PP</span>
+            </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; text-align: center;">
+                        <div>
+                            <span class="indicator-stat-label">R1</span>
+                            <span class="indicator-stat-value" id="pivot-r1" style="font-size: 9px;">104,234</span>
+                    </div>
+                        <div>
+                            <span class="indicator-stat-label" style="color: #FCD535;">PP</span>
+                            <span class="indicator-stat-value" id="pivot-pp" style="font-size: 9px; color: #FCD535;">103,876</span>
+                    </div>
+                        <div>
+                            <span class="indicator-stat-label">S1</span>
+                            <span class="indicator-stat-value" id="pivot-s1" style="font-size: 9px;">103,543</span>
+                    </div>
+                    </div>
+                </div>
+
+                <!-- Hidden elements for data storage -->
+                <div style="display: none;">
+                    <span id="stoch-k"></span>
+                    <span id="stoch-d"></span>
+                    <span id="bb-width"></span>
+                    <span id="atr-percent"></span>
+                    <span id="atr-stop"></span>
+                    <span id="atr-profit"></span>
+                    <span id="avg-volume"></span>
+                    <span id="poc"></span>
+                    <span id="tenkan"></span>
+                    <span id="kijun"></span>
+                    <span id="senkou-a"></span>
+                    <span id="senkou-b"></span>
+                    <span id="fib-level"></span>
+                    <span id="fib-0"></span>
+                    <span id="fib-236"></span>
+                    <span id="fib-382"></span>
+                    <span id="fib-50"></span>
+                    <span id="fib-618"></span>
+                    <span id="fib-100"></span>
+                    <span id="pivot-r2"></span>
+                    <span id="pivot-r3"></span>
+                    <span id="pivot-s2"></span>
+        </div>
+    </div>
+
+            <!-- 交易记录 -->
+            <div class="market-depth">
+                <div class="depth-header">
+                    <i class="fas fa-history" style="color: #FCD535;"></i>
+                    <span>Recent Trades (Binance Price)</span>
+        </div>
+                <div id="trade-history" style="flex: 1; overflow-y: auto; font-size: 11px;">
+                    <div style="color: #5E6673; text-align: center; padding: 20px;">Waiting for trades...</div>
+        </div>
+        </div>
+        </div>
+            </div>
+
+    <!-- 视频模态框 -->
+    <div id="videoModal" class="video-modal">
+        <div class="video-modal-content">
+            <div class="video-modal-header">
+                <div class="video-modal-title">平台介绍视频</div>
+                <button class="video-close" onclick="closeVideoModal()">&times;</button>
+            </div>
+            <div class="video-container">
+                <video controls style="width: 100%; height: 100%;">
+                    <source src="introduce.MP4" type="video/mp4">
+                    您的浏览器不支持视频播放。
+                </video>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== 视频模态框控制 =====
+        function openVideoModal() {
+            document.getElementById('videoModal').style.display = 'block';
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+        }
+
+        function closeVideoModal() {
+            document.getElementById('videoModal').style.display = 'none';
+            document.body.style.overflow = 'auto'; // 恢复滚动
+        }
+
+        // 点击模态框背景关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('videoModal');
+            if (event.target === modal) {
+                closeVideoModal();
+            }
+        }
+
+        // ESC键关闭模态框
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeVideoModal();
+            }
+        });
+
+        // ===== 数据持久化 =====
+        const STORAGE_KEY = 'binaryFinanceData';
+        
+        // 清除旧数据（解决Gemini 2.5问题）
+        function clearOldData() {
+            try {
+                localStorage.removeItem(STORAGE_KEY);
+                console.log('🗑️ Old data cleared');
+            } catch (e) {
+                console.warn('⚠️ Failed to clear old data:', e);
+            }
+        }
+        
+        // 保存数据到localStorage
+        function saveData() {
+            const dataToSave = {
+                traders: traders.map(t => ({
+                    name: t.name,
+                    balance: t.balance,
+                    position: t.position,
+                    entryPrice: t.entryPrice,
+                    pnl: t.pnl,
+                    trades: t.trades,
+                    wins: t.wins,
+                    todayPnl: t.todayPnl,
+                    margin: t.margin
+                })),
+                tradeHistory: tradeHistory.slice(0, 50), // 保存最近50条
+                runtime: runtime,
+                lastUpdate: Date.now()
+            };
+            
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+        }
+        
+        // 从localStorage加载数据
+        function loadData() {
+            try {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    
+                    // 检查数据是否是今天的
+                    const lastUpdate = new Date(data.lastUpdate);
+                    const today = new Date();
+                    const isSameDay = lastUpdate.getDate() === today.getDate() && 
+                                      lastUpdate.getMonth() === today.getMonth() && 
+                                      lastUpdate.getFullYear() === today.getFullYear();
+                    
+                    if (isSameDay) {
+                        // 恢复交易员数据（只恢复交易数据，不恢复名称）
+                        data.traders.forEach((savedTrader, index) => {
+                            if (traders[index] && savedTrader.name === traders[index].name) {
+                                // 只恢复交易数据，保持当前名称
+                                Object.assign(traders[index], {
+                                    balance: savedTrader.balance,
+                                    position: savedTrader.position,
+                                    entryPrice: savedTrader.entryPrice,
+                                    pnl: savedTrader.pnl,
+                                    trades: savedTrader.trades,
+                                    wins: savedTrader.wins,
+                                    todayPnl: savedTrader.todayPnl,
+                                    margin: savedTrader.margin
+                                });
+                            }
+                        });
+                        
+                        // 恢复交易历史
+                        tradeHistory = data.tradeHistory || [];
+                        
+                        // 恢复运行时间
+                        runtime = data.runtime || 0;
+                        
+                        console.log('✅ Data restored from localStorage');
+                        return true;
+                    } else {
+                        // 如果不是今天的数据，清除
+                        localStorage.removeItem(STORAGE_KEY);
+                        console.log('📅 New day, starting fresh');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+            return false;
+        }
+        
+        // 重置数据
+        function resetAllData() {
+            if (confirm('确定要重置所有交易数据吗？此操作不可恢复。')) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            }
+        }
+        
+        // 定期自动保存
+        setInterval(saveData, 5000); // 每5秒自动保存
+
+        // ===== 全局变量 =====
+        let BINANCE_PRICE = 0; // 唯一的价格源
+        let runtime = 0;
+        const LEVERAGE = 5;
+        let selectedAmount = 0;
+        let selectedPercent = 0;
+        let tradeHistory = [];
+        let priceSource = 'Waiting...';
+        
+        // 交易员数据
+        const traders = [
+            { name: 'Claude 4.5', avatar: 'claud.jpg', color: '#8B5CF6', balance: 100000, position: 0, entryPrice: 0, pnl: 0, trades: 0, wins: 0, todayPnl: 0 },
+            { name: 'GPT-5', avatar: 'gpt.jpg', color: '#0ECB81', balance: 100000, position: 0, entryPrice: 0, pnl: 0, trades: 0, wins: 0, todayPnl: 0 },
+            { name: 'DeepSeek V3', avatar: 'deepseek.jpg', color: '#FCD535', balance: 100000, position: 0, entryPrice: 0, pnl: 0, trades: 0, wins: 0, todayPnl: 0 },
+            { name: 'xAI Grok', avatar: 'grok.jpg', color: '#F6465D', balance: 100000, position: 0, entryPrice: 0, pnl: 0, trades: 0, wins: 0, todayPnl: 0 },
+            { name: 'Your Account', avatar: 'logo.png', color: '#1E88E5', balance: 100000, position: 0, entryPrice: 0, pnl: 0, trades: 0, wins: 0, isUser: true, margin: 0, todayPnl: 0 }
+        ];
+
+        // ===== 核心：获取Binance实时价格 =====
+        async function fetchBinancePrice() {
+            try {
+                const response = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
+                if (response.ok) {
+                    const data = await response.json();
+                    const newPrice = parseFloat(data.lastPrice);
+                    const priceChange = parseFloat(data.priceChangePercent);
+                    const volume = parseFloat(data.volume);
+                    
+                    if (newPrice > 0) {
+                        BINANCE_PRICE = newPrice;
+                        
+                        // 更新价格显示
+                        const formattedPrice = newPrice.toLocaleString('en-US', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        });
+                        
+                        document.getElementById('btc-price').textContent = formattedPrice;
+                        document.getElementById('market-price').textContent = formattedPrice;
+                        
+                        // 更新涨跌幅
+                        const changeEl = document.getElementById('btc-change');
+                        changeEl.textContent = (priceChange >= 0 ? '+' : '') + priceChange.toFixed(2) + '%';
+                        changeEl.className = priceChange >= 0 ? 'ticker-value green' : 'ticker-value red';
+                        
+                        // 更新成交量
+                        const volumeInBillions = (volume * newPrice / 1000000000).toFixed(2);
+                        document.getElementById('volume').textContent = volumeInBillions + 'B';
+                        
+                        // 更新状态
+                        document.getElementById('price-source').textContent = 'Binance Live';
+                        
+                        // 更新所有持仓盈亏
+                        updateAllPositionsPnL();
+                        
+                        console.log(`✅ Binance Price Updated: $${formattedPrice}`);
+                    }
+                }
+            } catch (error) {
+                console.error('Binance API error:', error);
+                // 使用备用模拟价格
+                if (BINANCE_PRICE === 0) {
+                    BINANCE_PRICE = 103000 + Math.random() * 2000;
+                }
+                BINANCE_PRICE += (Math.random() - 0.5) * 20;
+                
+                document.getElementById('price-source').textContent = 'Simulated';
+                updatePriceDisplay();
+            }
+        }
+
+        // 更新价格显示
+        function updatePriceDisplay() {
+            const formattedPrice = BINANCE_PRICE.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            
+            document.getElementById('btc-price').textContent = formattedPrice;
+            document.getElementById('market-price').textContent = formattedPrice;
+            
+            updateAllPositionsPnL();
+        }
+
+        // 更新所有持仓盈亏
+        function updateAllPositionsPnL() {
+            traders.forEach(trader => {
+                if (trader.position !== 0 && BINANCE_PRICE > 0) {
+                    if (trader.position > 0) {
+                        trader.pnl = (BINANCE_PRICE - trader.entryPrice) * Math.abs(trader.position);
+            } else {
+                        trader.pnl = (trader.entryPrice - BINANCE_PRICE) * Math.abs(trader.position);
+                    }
+                }
+            });
+            updatePosition();
+            renderLeaderboard();
+        }
+
+        // ===== 用户开仓 - 使用Binance价格 =====
+        function openPosition(type) {
+            const user = traders.find(t => t.isUser);
+            
+            if (BINANCE_PRICE === 0) {
+                showToast('等待价格更新...', 'error');
+                return;
+            }
+            
+            if (user.position !== 0) {
+                showToast('请先平仓当前持仓', 'error');
+                return;
+            }
+            
+            if (selectedAmount <= 0) {
+                showToast('请选择交易数量', 'error');
+                return;
+            }
+            
+            const margin = (selectedAmount * BINANCE_PRICE) / LEVERAGE;
+            if (margin > user.balance) {
+                showToast('余额不足', 'error');
+                return;
+            }
+            
+            // 使用Binance价格开仓
+            user.position = type === 'long' ? selectedAmount : -selectedAmount;
+            user.entryPrice = BINANCE_PRICE;
+            user.margin = margin;
+            user.balance -= margin;
+            user.trades++;
+            
+            // 添加交易记录
+            addTradeRecord('Your Account', type.toUpperCase(), selectedAmount, BINANCE_PRICE);
+            
+            showToast(`${type === 'long' ? 'LONG' : 'SHORT'} ${selectedAmount.toFixed(3)} BTC @ $${BINANCE_PRICE.toFixed(2)} (Binance)`);
+            
+            // 重置选择
+            selectedAmount = 0;
+            selectedPercent = 0;
+            document.getElementById('size-display').textContent = '0.000 BTC';
+            document.querySelectorAll('.size-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            updatePosition();
+            saveData(); // 保存数据
+        }
+
+        // ===== 用户平仓 - 使用Binance价格 =====
+        function closePosition() {
+            const user = traders.find(t => t.isUser);
+            if (user.position === 0) return;
+            
+            // 使用Binance价格计算盈亏
+            let pnl;
+            if (user.position > 0) {
+                pnl = (BINANCE_PRICE - user.entryPrice) * Math.abs(user.position);
+            } else {
+                pnl = (user.entryPrice - BINANCE_PRICE) * Math.abs(user.position);
+            }
+            
+            user.balance += user.margin + pnl;
+            user.todayPnl = (user.todayPnl || 0) + pnl;
+            if (pnl > 0) user.wins++;
+            
+            // 添加平仓记录
+            addTradeRecord('Your Account', 'CLOSE', Math.abs(user.position), BINANCE_PRICE, pnl);
+            
+            // 显示正确的盈亏
+            const pnlText = pnl >= 0 ? `盈利: +$${Math.abs(pnl).toFixed(2)}` : `亏损: -$${Math.abs(pnl).toFixed(2)}`;
+            const toastType = pnl >= 0 ? 'success' : 'error';
+            showToast(`平仓 @ $${BINANCE_PRICE.toFixed(2)} | ${pnlText}`, toastType);
+            
+            // 重置仓位
+            user.position = 0;
+            user.entryPrice = 0;
+            user.margin = 0;
+            
+            updatePosition();
+            renderLeaderboard();
+            saveData(); // 保存数据
+        }
+
+        // ===== AI交易 - 使用Binance价格 =====
+        function aiTrade() {
+            if (BINANCE_PRICE === 0) return;
+            
+            let hasTraded = false;
+            
+            traders.forEach(trader => {
+                if (trader.isUser) return;
+                
+                if (Math.random() < 0.3) {
+                    if (trader.position === 0 && Math.random() < 0.5) {
+                        // AI开仓 - 使用Binance价格
+                        const size = 0.01 + Math.random() * 0.02;
+                        const direction = Math.random() > 0.5 ? 'LONG' : 'SHORT';
+                        trader.position = direction === 'LONG' ? size : -size;
+                        trader.entryPrice = BINANCE_PRICE;
+                        trader.trades++;
+                        const margin = (size * BINANCE_PRICE) / LEVERAGE;
+                        trader.balance -= margin;
+                        
+                        addTradeRecord(trader.name, direction, size, BINANCE_PRICE);
+                        console.log(`${trader.name} ${direction} @ $${BINANCE_PRICE.toFixed(2)}`);
+                        hasTraded = true;
+                        
+                    } else if (trader.position !== 0 && Math.random() < 0.5) {
+                        // AI平仓 - 使用Binance价格
+                        let pnl;
+                        if (trader.position > 0) {
+                            pnl = (BINANCE_PRICE - trader.entryPrice) * Math.abs(trader.position);
+                } else {
+                            pnl = (trader.entryPrice - BINANCE_PRICE) * Math.abs(trader.position);
+                        }
+                        
+                        const margin = (Math.abs(trader.position) * trader.entryPrice) / LEVERAGE;
+                        trader.balance += margin + pnl;
+                        trader.todayPnl = (trader.todayPnl || 0) + pnl;
+                    if (pnl > 0) trader.wins++;
+                        
+                        addTradeRecord(trader.name, 'CLOSE', Math.abs(trader.position), BINANCE_PRICE, pnl);
+                        console.log(`${trader.name} CLOSE @ $${BINANCE_PRICE.toFixed(2)}, PnL: ${pnl.toFixed(2)}`);
+                        
+                        trader.position = 0;
+                        trader.pnl = 0;
+                        hasTraded = true;
+                    }
+                }
+            });
+            
+            renderLeaderboard();
+            
+            // 如果有交易发生，保存数据
+            if (hasTraded) {
+            saveData();
+        }
+        }
+
+        // 选择数量
+        function selectSize(percent) {
+            if (BINANCE_PRICE === 0) return;
+            
+            selectedPercent = percent;
+            const user = traders.find(t => t.isUser);
+            const maxBTC = (user.balance * LEVERAGE) / BINANCE_PRICE;
+            selectedAmount = (maxBTC * percent / 100);
+            
+            document.querySelectorAll('.size-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            document.getElementById('size-display').textContent = selectedAmount.toFixed(3) + ' BTC';
+        }
+
+        // 更新仓位显示
+        function updatePosition() {
+            const user = traders.find(t => t.isUser);
+            
+            if (user.position === 0) {
+                document.getElementById('pos-direction').textContent = '--';
+                document.getElementById('pos-direction').style.color = '#848E9C';
+                document.getElementById('pos-size').textContent = '--';
+                document.getElementById('pos-pnl').textContent = '--';
+                document.getElementById('pos-pnl').style.color = '#848E9C';
+                document.getElementById('pos-entry').textContent = '--';
+                document.getElementById('pos-mark').textContent = '--';
+                document.getElementById('close-btn').disabled = true;
+                } else {
+                const direction = user.position > 0 ? 'LONG' : 'SHORT';
+                document.getElementById('pos-direction').textContent = direction;
+                document.getElementById('pos-direction').style.color = user.position > 0 ? '#0ECB81' : '#F6465D';
+                
+                document.getElementById('pos-size').textContent = Math.abs(user.position).toFixed(3) + ' BTC';
+                document.getElementById('pos-entry').textContent = user.entryPrice.toFixed(2);
+                document.getElementById('pos-entry').style.color = '#FCD535';
+                
+                if (BINANCE_PRICE > 0) {
+                    document.getElementById('pos-mark').textContent = BINANCE_PRICE.toFixed(2);
+                    
+                    let pnl;
+                    if (user.position > 0) {
+                        pnl = (BINANCE_PRICE - user.entryPrice) * Math.abs(user.position);
+                } else {
+                        pnl = (user.entryPrice - BINANCE_PRICE) * Math.abs(user.position);
+                    }
+                    
+                    const pnlText = pnl >= 0 ? '+$' + pnl.toFixed(2) : '-$' + Math.abs(pnl).toFixed(2);
+                    document.getElementById('pos-pnl').textContent = pnlText;
+                    document.getElementById('pos-pnl').style.color = pnl >= 0 ? '#0ECB81' : '#F6465D';
+                }
+                
+                document.getElementById('close-btn').disabled = false;
+            }
+            
+            document.getElementById('pos-balance').textContent = '$' + user.balance.toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+            
+            // 更新统计
+            const todayPnl = user.todayPnl || 0;
+            const todayPnlText = todayPnl >= 0 ? '+$' + todayPnl.toFixed(2) : '-$' + Math.abs(todayPnl).toFixed(2);
+            document.getElementById('today-pnl').textContent = todayPnlText;
+            document.getElementById('today-pnl').style.color = todayPnl >= 0 ? '#0ECB81' : '#F6465D';
+            
+            const winRate = user.trades > 0 ? (user.wins / user.trades * 100) : 0;
+            document.getElementById('win-rate').textContent = winRate.toFixed(1) + '%';
+            document.getElementById('total-trades').textContent = user.trades;
+        }
+
+        // 添加交易记录
+        function addTradeRecord(trader, type, size, price, pnl = null) {
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+            tradeHistory.unshift({
+                time: time,
+                trader: trader,
+                type: type,
+                size: size,
+                price: price,
+                pnl: pnl
+            });
+            
+            if (tradeHistory.length > 20) tradeHistory.pop();
+            renderTradeHistory();
+        }
+
+        // 渲染交易记录
+        function renderTradeHistory() {
+            const container = document.getElementById('trade-history');
+            if (tradeHistory.length === 0) {
+                container.innerHTML = '<div style="color: #5E6673; text-align: center; padding: 20px;">Waiting for trades...</div>';
+                return;
+            }
+            
+            container.innerHTML = tradeHistory.map(trade => {
+                const typeColor = trade.type === 'LONG' ? '#0ECB81' : trade.type === 'SHORT' ? '#F6465D' : '#848E9C';
+                const traderColor = trade.trader === 'Your Account' ? '#1E88E5' : '#848E9C';
+                
+                let html = `
+                    <div style="padding: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span style="color: ${traderColor}; font-weight: 600;">${trade.trader}</span>
+                            <span style="color: #5E6673; font-size: 10px;">${trade.time}</span>
+                            </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>
+                                <span style="color: ${typeColor}; font-weight: 600;">${trade.type}</span>
+                                <span style="color: #848E9C;"> ${trade.size.toFixed(3)} BTC</span>
+                            </span>
+                            <span style="color: #FCD535;">$${trade.price.toFixed(2)}</span>
+                        </div>`;
+                
+                if (trade.pnl !== null) {
+                    const pnlColor = trade.pnl >= 0 ? '#0ECB81' : '#F6465D';
+                    const pnlText = trade.pnl >= 0 ? '+$' + trade.pnl.toFixed(2) : '-$' + Math.abs(trade.pnl).toFixed(2);
+                    html += `
+                        <div style="text-align: right; margin-top: 4px;">
+                            <span style="color: ${pnlColor}; font-weight: 600;">${pnlText}</span>
+                        </div>`;
+                }
+                
+                html += '</div>';
+                return html;
+            }).join('');
+        }
+
+        // 渲染排行榜
+        function renderLeaderboard() {
+            const container = document.getElementById('leaderboard');
+            const sorted = [...traders].sort((a, b) => (b.balance + b.pnl) - (a.balance + a.pnl));
+            
+            container.innerHTML = sorted.map((trader, index) => {
+                const equity = trader.balance + trader.pnl;
+                const roi = ((equity - 100000) / 100000 * 100);
+                
+                return `
+                    <div class="trader-card ${trader.isUser ? 'user' : ''}">
+                        <div class="rank-badge ${index < 3 ? 'rank-' + (index + 1) : ''}">${index + 1}</div>
+                        <div style="margin-left: 32px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 32px; height: 32px; background: ${trader.color}; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: white; overflow: hidden;">
+                                        <img src="${trader.avatar}" alt="${trader.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;" onerror="this.style.display='none'; this.parentElement.innerHTML='${trader.name.charAt(0)}';">
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 12px; font-weight: 600;">${trader.name}</div>
+                                        <div style="font-size: 10px; color: ${trader.position > 0 ? '#0ECB81' : trader.position < 0 ? '#F6465D' : '#848E9C'};">
+                                            ${trader.position === 0 ? 'No Position' : trader.position > 0 ? 'LONG' : 'SHORT'}
+                                            ${trader.position !== 0 ? ' @ $' + trader.entryPrice.toFixed(0) : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div class="${roi >= 0 ? 'green' : 'red'}" style="font-size: 14px; font-weight: 600;">
+                                        ${roi >= 0 ? '+' : ''}${roi.toFixed(2)}%
+                                    </div>
+                                    <div style="font-size: 10px; color: #848E9C;">${trader.pnl >= 0 ? '+' : ''}$${Math.abs(trader.pnl).toFixed(0)}</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #5E6673;">
+                                <span>Equity: $${equity.toFixed(0)}</span>
+                                <span>Trades: ${trader.trades}</span>
+                                <span>Win: ${trader.wins}/${trader.trades}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 初始化TradingView
+        function initTradingView() {
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": "BINANCE:BTCUSDT",
+                "interval": "1",
+                "timezone": "Asia/Shanghai",
+                "theme": "dark",
+                "style": "1",
+                "locale": "zh_CN",
+                "toolbar_bg": "#0B0E11",
+                "enable_publishing": false,
+                "container_id": "tv-chart"
+            });
+        }
+
+        // 更新指标
+        function updateIndicators() {
+            // RSI
+            const rsi = 30 + Math.random() * 40;
+            document.getElementById('rsi-value').textContent = rsi.toFixed(2);
+            document.getElementById('rsi-pointer').style.left = rsi + '%';
+            
+            let rsiSignal, rsiZone;
+            if (rsi > 70) {
+                rsiSignal = 'SELL';
+                rsiZone = 'Overbought';
+                document.getElementById('rsi-signal').className = 'signal-badge signal-sell';
+            } else if (rsi < 30) {
+                rsiSignal = 'BUY';
+                rsiZone = 'Oversold';
+                document.getElementById('rsi-signal').className = 'signal-badge signal-buy';
+                    } else {
+                rsiSignal = 'Neutral';
+                rsiZone = 'Normal';
+                document.getElementById('rsi-signal').className = 'signal-badge signal-neutral';
+            }
+            document.getElementById('rsi-signal').textContent = rsiSignal;
+            document.getElementById('rsi-zone').textContent = rsiZone;
+            
+            // MACD
+            const macdLine = -200 + Math.random() * 400;
+            const signalLine = macdLine + (Math.random() - 0.5) * 50;
+            const histogram = macdLine - signalLine;
+            
+            document.getElementById('macd-line').textContent = macdLine.toFixed(2);
+            document.getElementById('macd-signal-line').textContent = signalLine.toFixed(2);
+            document.getElementById('macd-histogram').textContent = (histogram >= 0 ? '+' : '') + histogram.toFixed(2);
+            document.getElementById('macd-histogram').style.color = histogram >= 0 ? '#0ECB81' : '#F6465D';
+            
+            if (histogram > 0 && Math.abs(histogram) > 10) {
+                document.getElementById('macd-signal').className = 'signal-badge signal-buy';
+                document.getElementById('macd-signal').textContent = 'BUY';
+            } else if (histogram < 0 && Math.abs(histogram) > 10) {
+                document.getElementById('macd-signal').className = 'signal-badge signal-sell';
+                document.getElementById('macd-signal').textContent = 'SELL';
+            } else {
+                document.getElementById('macd-signal').className = 'signal-badge signal-neutral';
+                document.getElementById('macd-signal').textContent = 'NEUTRAL';
+            }
+            
+            // Stochastic
+            const stochK = 20 + Math.random() * 60;
+            const stochD = stochK + (Math.random() - 0.5) * 10;
+            
+            document.getElementById('stoch-value').textContent = stochK.toFixed(2);
+            document.getElementById('stoch-pointer').style.left = stochK + '%';
+            document.getElementById('stoch-k').textContent = stochK.toFixed(2);
+            document.getElementById('stoch-d').textContent = stochD.toFixed(2);
+            
+            if (stochK > stochD) {
+                document.getElementById('stoch-cross').textContent = 'Bullish';
+                document.getElementById('stoch-cross').style.color = '#0ECB81';
+            } else {
+                document.getElementById('stoch-cross').textContent = 'Bearish';
+                document.getElementById('stoch-cross').style.color = '#F6465D';
+            }
+            
+            document.getElementById('stoch-zone').textContent = stochK > 80 ? 'Overbought' : stochK < 20 ? 'Oversold' : 'Normal';
+            
+            // Bollinger Bands (基于当前价格)
+            if (BINANCE_PRICE > 0) {
+                const bbMiddle = BINANCE_PRICE;
+                const bbWidth = BINANCE_PRICE * 0.007; // 0.7% width
+                const bbUpper = bbMiddle + bbWidth;
+                const bbLower = bbMiddle - bbWidth;
+                const bbPosition = ((BINANCE_PRICE - bbLower) / (bbUpper - bbLower) * 100);
+                
+                document.getElementById('bb-upper').textContent = bbUpper.toFixed(2);
+                document.getElementById('bb-middle').textContent = bbMiddle.toFixed(2);
+                document.getElementById('bb-lower').textContent = bbLower.toFixed(2);
+                document.getElementById('bb-width').textContent = (bbWidth * 2).toFixed(2);
+                document.getElementById('bb-percent').textContent = bbPosition.toFixed(1) + '%';
+                
+                if (bbPosition > 80) {
+                    document.getElementById('bb-signal').className = 'signal-badge signal-sell';
+                    document.getElementById('bb-signal').textContent = 'SELL';
+                } else if (bbPosition < 20) {
+                    document.getElementById('bb-signal').className = 'signal-badge signal-buy';
+                    document.getElementById('bb-signal').textContent = 'BUY';
+                } else {
+                    document.getElementById('bb-signal').className = 'signal-badge signal-neutral';
+                    document.getElementById('bb-signal').textContent = 'NEUTRAL';
+                }
+            }
+            
+            // ATR
+            const atr = BINANCE_PRICE * (0.008 + Math.random() * 0.012); // 0.8-2% of price
+            const atrPercent = (atr / BINANCE_PRICE * 100);
+            
+            document.getElementById('atr-value').textContent = atr.toFixed(2);
+            document.getElementById('atr-percent').textContent = atrPercent.toFixed(2) + '%';
+            document.getElementById('atr-volatility').textContent = atrPercent > 1.5 ? 'High' : atrPercent > 0.8 ? 'Medium' : 'Low';
+            document.getElementById('atr-stop').textContent = '-' + (atr * 2).toFixed(2);
+            document.getElementById('atr-profit').textContent = '+' + (atr * 3).toFixed(2);
+            
+            // Moving Averages
+            if (BINANCE_PRICE > 0) {
+                const ema9 = BINANCE_PRICE + (Math.random() - 0.5) * 100;
+                const ema21 = BINANCE_PRICE + (Math.random() - 0.5) * 200;
+                const sma50 = BINANCE_PRICE + (Math.random() - 0.5) * 500;
+                const sma200 = BINANCE_PRICE - 1000 - Math.random() * 1000;
+                
+                document.getElementById('ema9').textContent = ema9.toFixed(2);
+                document.getElementById('ema21').textContent = ema21.toFixed(2);
+                document.getElementById('sma50').textContent = sma50.toFixed(2);
+                document.getElementById('sma200').textContent = sma200.toFixed(2);
+                
+                if (ema9 > ema21 && ema21 > sma50) {
+                    document.getElementById('ma-cross').textContent = 'Golden Cross';
+                    document.getElementById('ma-cross').style.color = '#0ECB81';
+                    document.getElementById('ma-signal').className = 'signal-badge signal-strong-buy';
+                    document.getElementById('ma-signal').textContent = 'STRONG BUY';
+                } else if (ema9 < ema21 && ema21 < sma50) {
+                    document.getElementById('ma-cross').textContent = 'Death Cross';
+                    document.getElementById('ma-cross').style.color = '#F6465D';
+                    document.getElementById('ma-signal').className = 'signal-badge signal-strong-sell';
+                    document.getElementById('ma-signal').textContent = 'STRONG SELL';
+                } else {
+                    document.getElementById('ma-cross').textContent = 'No Cross';
+                    document.getElementById('ma-cross').style.color = '#848E9C';
+                    document.getElementById('ma-signal').className = 'signal-badge signal-neutral';
+                    document.getElementById('ma-signal').textContent = 'NEUTRAL';
+                }
+            }
+            
+            // Volume Analysis
+            const currentVolume = 2 + Math.random() * 1.5;
+            const avgVolume = 2.2;
+            const buyRatio = 45 + Math.random() * 20;
+            
+            document.getElementById('current-volume').textContent = currentVolume.toFixed(2) + 'B';
+            document.getElementById('avg-volume').textContent = avgVolume.toFixed(2) + 'B';
+            document.getElementById('buy-sell-ratio').textContent = buyRatio.toFixed(0) + '/' + (100 - buyRatio).toFixed(0);
+            document.getElementById('buy-sell-ratio').style.color = buyRatio > 50 ? '#0ECB81' : '#F6465D';
+            document.getElementById('poc').textContent = (BINANCE_PRICE - 50 + Math.random() * 100).toFixed(0);
+            
+            // Ichimoku Cloud
+            if (BINANCE_PRICE > 0) {
+                const tenkan = BINANCE_PRICE + (Math.random() - 0.5) * 100;
+                const kijun = BINANCE_PRICE + (Math.random() - 0.5) * 150;
+                const senkouA = BINANCE_PRICE + (Math.random() - 0.5) * 80;
+                const senkouB = BINANCE_PRICE + (Math.random() - 0.5) * 120;
+                
+                document.getElementById('tenkan').textContent = tenkan.toFixed(2);
+                document.getElementById('kijun').textContent = kijun.toFixed(2);
+                document.getElementById('senkou-a').textContent = senkouA.toFixed(2);
+                document.getElementById('senkou-b').textContent = senkouB.toFixed(2);
+                
+                if (BINANCE_PRICE > Math.max(senkouA, senkouB)) {
+                    document.getElementById('ichimoku-trend').textContent = 'Above Cloud';
+                    document.getElementById('cloud-color').textContent = 'Bullish';
+                    document.getElementById('cloud-color').style.color = '#0ECB81';
+                    document.getElementById('ichimoku-signal').className = 'signal-badge signal-buy';
+                    document.getElementById('ichimoku-signal').textContent = 'BUY';
+                } else if (BINANCE_PRICE < Math.min(senkouA, senkouB)) {
+                    document.getElementById('ichimoku-trend').textContent = 'Below Cloud';
+                    document.getElementById('cloud-color').textContent = 'Bearish';
+                    document.getElementById('cloud-color').style.color = '#F6465D';
+                    document.getElementById('ichimoku-signal').className = 'signal-badge signal-sell';
+                    document.getElementById('ichimoku-signal').textContent = 'SELL';
+                } else {
+                    document.getElementById('ichimoku-trend').textContent = 'In Cloud';
+                    document.getElementById('cloud-color').textContent = 'Neutral';
+                    document.getElementById('cloud-color').style.color = '#848E9C';
+                    document.getElementById('ichimoku-signal').className = 'signal-badge signal-neutral';
+                    document.getElementById('ichimoku-signal').textContent = 'NEUTRAL';
+                }
+            }
+            
+            // Fibonacci Levels
+            if (BINANCE_PRICE > 0) {
+                const high = BINANCE_PRICE + 2000;
+                const low = BINANCE_PRICE - 2500;
+                const diff = high - low;
+                
+                document.getElementById('fib-0').textContent = high.toFixed(2);
+                document.getElementById('fib-236').textContent = (high - diff * 0.236).toFixed(2);
+                document.getElementById('fib-382').textContent = (high - diff * 0.382).toFixed(2);
+                document.getElementById('fib-50').textContent = (high - diff * 0.5).toFixed(2);
+                document.getElementById('fib-618').textContent = (high - diff * 0.618).toFixed(2);
+                document.getElementById('fib-100').textContent = low.toFixed(2);
+                
+                const fibLevel = ((high - BINANCE_PRICE) / diff * 100);
+                document.getElementById('fib-level').textContent = fibLevel.toFixed(1) + '%';
+            }
+            
+            // Pivot Points
+            if (BINANCE_PRICE > 0) {
+                const pp = BINANCE_PRICE;
+                const r1 = pp + 350;
+                const r2 = pp + 700;
+                const r3 = pp + 1250;
+                const s1 = pp - 330;
+                const s2 = pp - 690;
+                const s3 = pp - 1050;
+                
+                document.getElementById('pivot-pp').textContent = pp.toFixed(2);
+                document.getElementById('pivot-r1').textContent = r1.toFixed(2);
+                document.getElementById('pivot-r2').textContent = r2.toFixed(2);
+                document.getElementById('pivot-r3').textContent = r3.toFixed(2);
+                document.getElementById('pivot-s1').textContent = s1.toFixed(2);
+                document.getElementById('pivot-s2').textContent = s2.toFixed(2);
+                
+                if (BINANCE_PRICE > pp) {
+                    document.getElementById('pivot-position').textContent = 'Above PP';
+                    document.getElementById('pivot-position').style.color = '#0ECB81';
+                } else {
+                    document.getElementById('pivot-position').textContent = 'Below PP';
+                    document.getElementById('pivot-position').style.color = '#F6465D';
+                }
+            }
+            
+            // Update Overall Signal
+            let bullSignals = 0;
+            let totalSignals = 0;
+            
+            // Count bull/bear signals
+            if (rsi < 50) bullSignals++;
+            if (histogram > 0) bullSignals++;
+            if (stochK > stochD) bullSignals++;
+            if (document.getElementById('ma-signal').textContent.includes('BUY')) bullSignals += 2;
+            if (document.getElementById('ichimoku-signal').textContent === 'BUY') bullSignals++;
+            totalSignals = 6;
+            
+            const overallScore = Math.round((bullSignals / totalSignals) * 100);
+            document.getElementById('overall-score').textContent = overallScore;
+            
+            const scoreEl = document.getElementById('overall-score');
+            const signalEl = document.querySelector('.overall-signal .signal-badge');
+            
+            if (overallScore >= 70) {
+                scoreEl.className = 'overall-value green';
+                signalEl.className = 'signal-badge signal-strong-buy';
+                signalEl.textContent = 'STRONG BUY';
+            } else if (overallScore >= 55) {
+                scoreEl.className = 'overall-value green';
+                signalEl.className = 'signal-badge signal-buy';
+                signalEl.textContent = 'BUY';
+            } else if (overallScore >= 45) {
+                scoreEl.className = 'overall-value';
+                scoreEl.style.color = '#848E9C';
+                signalEl.className = 'signal-badge signal-neutral';
+                signalEl.textContent = 'NEUTRAL';
+            } else if (overallScore >= 30) {
+                scoreEl.className = 'overall-value red';
+                signalEl.className = 'signal-badge signal-sell';
+                signalEl.textContent = 'SELL';
+                } else {
+                scoreEl.className = 'overall-value red';
+                signalEl.className = 'signal-badge signal-strong-sell';
+                signalEl.textContent = 'STRONG SELL';
+            }
+        }
+
+        // 更新时间
+        function updateTime() {
+            runtime++;
+            const h = Math.floor(runtime / 3600);
+            const m = Math.floor((runtime % 3600) / 60);
+            const s = runtime % 60;
+            document.getElementById('runtime').textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }
+
+        // 提示
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+            const icon = type === 'success' ? 'check-circle' : 'times-circle';
+            toast.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ===== 初始化 =====
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Starting Binary Finance Agent...');
+            
+            // 清除旧数据，解决Gemini 2.5问题
+            clearOldData();
+            
+            // 先尝试加载保存的数据
+            const hasLoadedData = loadData();
+            
+            // 立即获取Binance价格
+            await fetchBinancePrice();
+            
+            // 初始化组件
+            initTradingView();
+            
+            // 如果没有保存的数据，初始化AI交易员
+            if (!hasLoadedData) {
+                // 给AI一些初始仓位
+                traders.forEach((trader, index) => {
+                    if (!trader.isUser && index < 2 && Math.random() < 0.5) {
+                        const size = 0.01 + Math.random() * 0.015;
+                        const direction = Math.random() > 0.5 ? 1 : -1;
+                        trader.position = direction * size;
+                        trader.entryPrice = BINANCE_PRICE + (Math.random() - 0.5) * 100;
+                        trader.trades = Math.floor(Math.random() * 3) + 1;
+                        trader.wins = Math.floor(trader.trades * 0.6);
+                    }
+                });
+            }
+            
+            // 渲染界面
+            renderLeaderboard();
+            renderTradeHistory();
+            updatePosition();
+            updateIndicators();
+            
+            // 定时更新
+            setInterval(updateTime, 1000);
+            setInterval(fetchBinancePrice, 2000); // 每2秒更新Binance价格
+            setInterval(updatePosition, 1000);
+            setInterval(aiTrade, 5000);
+            setInterval(updateIndicators, 4000);
+            
+            // 页面关闭前保存数据
+        window.addEventListener('beforeunload', saveData);
+        
+            console.log('✅ System initialized with Binance real-time price');
+            
+            if (hasLoadedData) {
+                showToast('交易数据已恢复', 'success');
+            }
+        });
+
+        // 添加退出动画
+        const style = document.createElement('style');
+        style.textContent = '@keyframes slideOut { to { transform: translateX(120%); opacity: 0; } }';
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
